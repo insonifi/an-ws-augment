@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
-const NOTIME = 0
+const (
+	NOTIME       = 0
+	EPOCH_OFFSET = -2208988800000
+)
 
 func GetData(
 	req *http.Request,
@@ -38,7 +41,7 @@ func GetData(
 	}
 
 	prefix := append([]byte{0, byte(len(cmd.Endpoint))}, []byte(cmd.Endpoint)...)
-	pkt_hdr := append(prefix/*, []byte(FCC[cmd.Format])...*/)
+	pkt_hdr := append(prefix /*, []byte(FCC[cmd.Format])...*/)
 
 	var read StreamReader
 
@@ -64,7 +67,7 @@ L:
 		select {
 		case <-pending:
 			cancel()
-			log.Println("STOPPED", cmd.Endpoint)
+			log.Println("STOPPED", cmd.StreamId)
 			break L
 		default:
 			pkt, err := read()
@@ -118,7 +121,7 @@ func readMultiPart(
 			return nil, err
 		}
 
-    ts := getTime(part.Header.Get("X-Video-Original-Time"))
+		ts := getTime(part.Header.Get("X-Video-Original-Time"))
 
 		pkt := makePacket(hdr, ts, frame)
 
@@ -163,7 +166,10 @@ func getTime(strtime string) uint64 {
 			ASIP_TIMEFORMAT,
 			strtime,
 		)
-		return uint64(ts.UnixNano() / time.Millisecond.Nanoseconds())
+		js_time := ts.UnixNano() / time.Millisecond.Nanoseconds()
+		js_time -= EPOCH_OFFSET
+
+		return uint64(js_time)
 	}
-  return NOTIME
+	return NOTIME
 }
