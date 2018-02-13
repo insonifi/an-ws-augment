@@ -174,17 +174,17 @@ func handleWSCmd(
 		}
 
 		//stop pending streams
-		stopStream(pending, cmd.Endpoint)
+		stopStream(pending, cmd.StreamId)
 		quit := make(chan Signal)
 
-		(*pending)[cmd.Endpoint] = quit
+		(*pending)[cmd.StreamId] = quit
 
 		req := makeRequest(url, opts)
 		req.Header.Set("X-Video-Original-Time", cmd.BeginTime)
 
 		go GetData(req, cmd, wschan, quit)
 	case M_STOP:
-		stopStream(pending, cmd.Endpoint)
+		stopStream(pending, cmd.StreamId)
 
 		return
 	}
