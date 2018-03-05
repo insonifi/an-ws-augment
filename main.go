@@ -89,17 +89,14 @@ func handleData(
 	wschan chan []byte,
 	pending *map[string]chan Signal,
 ) {
-	for {
-		select {
-		case pkt := <-wschan:
-			//log.Println("wsc:", "send", len(pkt))
-			err := wsc.WriteMessage(websocket.BinaryMessage, pkt)
-			if err != nil {
-				log.Println("wsc:", err)
-				cleanup(pending)
+	for pkt := range wschan {
+		//log.Println("wsc:", "send", len(pkt))
+		err := wsc.WriteMessage(websocket.BinaryMessage, pkt)
+		if err != nil {
+			log.Println("wsc:", err)
+			cleanup(pending)
 
-				return
-			}
+			return
 		}
 	}
 }
